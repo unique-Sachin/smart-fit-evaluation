@@ -20,5 +20,3 @@ def query_rag(query:str):
     res = query_about_nutrition(query=query)
     return res
 
-
-    

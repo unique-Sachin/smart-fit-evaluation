@@ -9,3 +9,4 @@ fastapi[standard]
 uvicorn
 langchain_chroma
 chromadb
+streamlit
