@@ -78,6 +78,7 @@ rag_chain = (
 
 
 chat_history = []
+
 def query_about_nutrition(query:str) -> str:
     resp = rag_chain.invoke(query)
     history = {"query":query,"res":resp}

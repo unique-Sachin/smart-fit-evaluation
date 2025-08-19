@@ -16,5 +16,8 @@ if st.button("Submit"):
 
 st.subheader("Chat History", divider=True)
 for key,value in enumerate(chat_history):
-    st.text(f"{key}:{value}")
-    # st.text(key["query"])
+    print(key)
+    print(value)
+    # st.text(f"{key}:{value}")
+    st.text(value["query"])
+    st.text(value["res"])
