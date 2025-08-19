@@ -4,15 +4,13 @@ from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.docstore.in_memory import InMemoryDocstore
-
+from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-
-
 from uuid import uuid4
 import getpass
-import faiss
+import chromadb
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -39,24 +37,27 @@ documents = text_splitter.split_documents(documents=data)
 embeddings = OpenAIEmbeddings(
     model="text-embedding-3-large")
 
-index = faiss.IndexFlatL2(len(embeddings.embed_query("Nutritional info")))
-
-
-vector_store = FAISS(
+vector_store = Chroma(
+    collection_name="nutrition_collection",
     embedding_function=embeddings,
-    index=index,
-    docstore=InMemoryDocstore(),
-    index_to_docstore_id={},
+    persist_directory="./chroma_langchain_db",
 )
 
+
+client = chromadb.PersistentClient(path="./chroma_langchain_db")
 uuids = [str(uuid4()) for _ in range(len(documents))]
 
 vector_store.add_documents(documents=documents, ids=uuids)
 
-retriever = vector_store.as_retriever()
+
+retriever = vector_store.as_retriever(k=4)
+
+# docs = retriever.invoke("Lemonade")
 
 
-template = """You are an nutrition assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
+
+template = """You are an nutrition assistant for question-answering tasks, Use exact information from context and show numbers in answer.
+Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
 Question: {question}
 Context: {context}
 Answer:
@@ -65,7 +66,7 @@ prompt = ChatPromptTemplate.from_template(template)
 
 LLM = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
-""" Create a chain for the RAG flow """
+
 rag_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
@@ -73,5 +74,10 @@ rag_chain = (
     | StrOutputParser()
 )
 
-resp = rag_chain.invoke("Tell me about lemonade")
-print(resp)
+
+
+
+def query_about_nutrition(query:str) -> str:
+    resp = rag_chain.invoke(query)
+    return resp
+

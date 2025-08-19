@@ -1,6 +1,7 @@
+from rag import query_about_nutrition
 from typing import Union
-
 from fastapi import FastAPI
+
 
 app = FastAPI()
 
@@ -16,4 +17,8 @@ def read_item(item_id: int, q: Union[str, None] = None):
 
 @app.get("/query")
 def query_rag(query:str):
-    return 
+    res = query_about_nutrition(query=query)
+    return res
+
+
+    

@@ -5,3 +5,7 @@ pydantic
 langchain-openai
 langchain-community
 faiss-cpu
+fastapi[standard]
+uvicorn
+langchain_chroma
+chromadb
