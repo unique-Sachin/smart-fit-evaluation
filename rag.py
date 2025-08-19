@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI,OpenAIEmbeddings,OpenAI
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
+from langchain.chains import ConversationalRetrievalChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.docstore.in_memory import InMemoryDocstore
@@ -8,6 +8,7 @@ from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+
 from uuid import uuid4
 import getpass
 import chromadb
@@ -67,6 +68,7 @@ prompt = ChatPromptTemplate.from_template(template)
 LLM = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
 
+
 rag_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
@@ -75,9 +77,10 @@ rag_chain = (
 )
 
 
-
-
+chat_history = []
 def query_about_nutrition(query:str) -> str:
     resp = rag_chain.invoke(query)
+    history = {"query":query,"res":resp}
+    chat_history.append(history)
     return resp
 
